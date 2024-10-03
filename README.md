@@ -47,7 +47,7 @@ sudo apt-get upgrade
    curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh -a
 ```
 
-   After the installation completes, take note of the provided ==ID and password==, as you will need these to access the Wazuh dashboard.
+   After the installation completes, take note of the provided **ID and password**, as you will need these to access the Wazuh dashboard.
 
 5\. **Configure Wazuh IP Address**
 
