@@ -47,13 +47,13 @@ sudo apt-get upgrade
    curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh -a
 ```
 
-   After the installation completes, take note of the provided ID and password, as you will need these to access the Wazuh dashboard.
+   After the installation completes, take note of the provided ==ID and password==, as you will need these to access the Wazuh dashboard.
 
 5\. **Configure Wazuh IP Address**
 
    Change the Wazuh server's IP address by editing the configuration file. Replace `<your_ubuntu_ip>` with the actual IP address of your Ubuntu server:
 
-```
+  ```
    sudo nano /etc/wazuh-dashboard/opensearch_dashboards.yml
    ```
    Update the necessary fields with your server's IP address.
@@ -62,12 +62,9 @@ sudo apt-get upgrade
 
    Open a web browser and navigate to the Wazuh server's dashboard by entering:
 
-   ```
-
+   ```
    https://<your_ubuntu_ip>
-
-   ```
-
+   ```
 7\. **Add Wazuh Agents**
 
    You can add Wazuh agents for different operating systems, such as Kali Linux or Windows. Follow the respective instructions for installing the Wazuh agent on these systems.
