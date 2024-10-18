@@ -44,7 +44,7 @@ sudo apt-get upgrade
    Execute the following command to perform a single-step installation of Wazuh:
 
 ```
-   curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh -a
+   curl -sO https://packages.wazuh.com/4.9/wazuh-install.sh && sudo bash ./wazuh-install.sh -a
 ```
 
    After the installation completes, take note of the provided **ID and password**, as you will need these to access the Wazuh dashboard.
