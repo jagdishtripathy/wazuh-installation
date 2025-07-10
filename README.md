@@ -21,7 +21,7 @@ This README provides a brief overview of the installation process for Wazuh on a
    Before starting the installation, ensure your package index is up-to-date. Run the following command in the terminal:
 
   ```
-   sudo apt-get update
+sudo apt-get update
   ```
 
 2\. **Upgrade the System**
@@ -36,7 +36,7 @@ sudo apt-get upgrade
    To perform the installation, switch to the root user by running:
 
   ```
-   sudo su
+sudo su
 ```
 
 4\. **Install Wazuh**
@@ -44,7 +44,7 @@ sudo apt-get upgrade
    Execute the following command to perform a single-step installation of Wazuh:
 
 ```
-   curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh -a -i
+curl -sO https://packages.wazuh.com/4.7/wazuh-install.sh && sudo bash ./wazuh-install.sh -a -i
 ```
 
    After the installation completes, take note of the provided **ID and password**, as you will need these to access the Wazuh dashboard.
@@ -65,7 +65,7 @@ sudo systemctl status wazuh-manager
    Change the Wazuh server's IP address by editing the configuration file. Replace `<your_ubuntu_ip>` with the actual IP address of your Ubuntu server:
 
   ```
-   sudo nano /etc/wazuh-dashboard/opensearch_dashboards.yml
+sudo nano /etc/wazuh-dashboard/opensearch_dashboards.yml
    ```
    Update the necessary fields with your server's IP address.
 
@@ -74,7 +74,7 @@ sudo systemctl status wazuh-manager
    Open a web browser and navigate to the Wazuh server's dashboard by entering:
 
    ```
-   https://<your_ubuntu_ip>
+https://<your_ubuntu_ip>
    ```
    Open a web browser and navigate to the Wazuh server's dashboard by entering:
    
@@ -95,8 +95,7 @@ You have successfully installed Wazuh on your Ubuntu server. For further configu
 👨‍💻 Author
 ------------
 
-[**Jagadish Tripathy**](https://www.linkedin.com/in/jagadishtripathy/)  
-CEH v.12
+[**Jagadish Tripathy**](https://www.linkedin.com/in/jagadishtripathy/)
 
 * * * * *
 
