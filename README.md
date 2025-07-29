@@ -21,7 +21,7 @@ This README provides a brief overview of the installation process for Wazuh on a
    Before starting the installation, ensure your package index is up-to-date. Run the following command in the terminal:
 
   ```
-sudo apt-get update
+sudo apt update
   ```
 
 2\. **Upgrade the System**
@@ -29,7 +29,7 @@ sudo apt-get update
    Upgrade all installed packages to their latest versions:
 
   ```
-sudo apt-get upgrade
+sudo apt upgrade
 ```
 3\. **Gain Root Privileges**
 
