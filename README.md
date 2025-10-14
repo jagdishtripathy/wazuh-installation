@@ -2,9 +2,9 @@ Here's a sample README file that explains the Wazuh installation process based o
 
 ---
 
-# Wazuh Installation Guide on Ubuntu
+# Wazuh Installation Guide on Linux environment.
 
-This README provides a brief overview of the installation process for Wazuh on an Ubuntu server. Follow the steps below to successfully install and configure Wazuh.
+This README provides a brief overview of the installation process for Wazuh on an Linux environment. Follow the steps below to successfully install and configure Wazuh.
 
 ## Prerequisites
 
