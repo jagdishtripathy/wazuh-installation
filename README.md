@@ -65,7 +65,7 @@ sudo systemctl status wazuh-manager
    Change the Wazuh server's IP address by editing the configuration file. Replace `<your_ubuntu_ip>` with the actual IP address of your Ubuntu server:
 
   ```
-sudo nano /etc/wazuh-dashboard/opensearch_dashboards.yml
+sudo mousepad /etc/wazuh-dashboard/opensearch_dashboards.yml
    ```
    Update the necessary fields with your server's IP address.
 
