@@ -1,0 +1,154 @@
+name: Update Wazuh Version
+
+on:
+  schedule:
+    # Run automatically once every day at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-wazuh-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check and update Wazuh version in README
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          README_FILE="README.md"
+          if [ ! -f "$README_FILE" ]; then
+            echo "::error::README file '$README_FILE' not found."
+            exit 1
+          fi
+
+          echo "=================================================="
+          echo "Step 1: Extracting current version from $README_FILE"
+          echo "=================================================="
+          CURRENT_VERSION=$(sed -nE 's/.*https:\/\/packages\.wazuh\.com\/([0-9]+\.[0-9]+)\/wazuh-install\.sh.*/\1/p' "$README_FILE" | head -n 1)
+
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "::error::Could not extract current Wazuh version from $README_FILE."
+            exit 1
+          fi
+          echo "Current Wazuh version in $README_FILE: $CURRENT_VERSION"
+
+          echo "=================================================="
+          echo "Step 2: Querying official Wazuh GitHub Releases API"
+          echo "=================================================="
+          API_URL="https://api.github.com/repos/wazuh/wazuh/releases?per_page=50"
+          echo "Querying: $API_URL"
+
+          AUTH_HEADER=""
+          if [ -n "${GITHUB_TOKEN:-}" ]; then
+            AUTH_HEADER="Authorization: Bearer $GITHUB_TOKEN"
+          fi
+
+          HTTP_RESPONSE=$(curl -sS -w "\nHTTP_STATUS:%{http_code}" \
+            -H "Accept: application/vnd.github+json" \
+            ${AUTH_HEADER:+-H "$AUTH_HEADER"} \
+            "$API_URL")
+
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | grep "HTTP_STATUS:" | cut -d':' -f2)
+          BODY=$(echo "$HTTP_RESPONSE" | sed '/HTTP_STATUS:/d')
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::GitHub Releases API request failed with HTTP status $HTTP_CODE."
+            echo "Response: $BODY"
+            exit 1
+          fi
+
+          # Identify latest stable release (excluding prereleases and drafts)
+          LATEST_STABLE_TAG=$(echo "$BODY" | jq -r '
+            [ .[] | select(.draft == false and .prerelease == false) | .tag_name ] | .[]
+          ' | grep -E '^v?[0-9]+\.[0-9]+(\.[0-9]+)?$' | sort -V | tail -n 1)
+
+          # Fallback to /releases/latest endpoint if list query didn't yield a tag
+          if [ -z "$LATEST_STABLE_TAG" ]; then
+            echo "Checking /releases/latest endpoint as fallback..."
+            LATEST_URL="https://api.github.com/repos/wazuh/wazuh/releases/latest"
+            LATEST_RESP=$(curl -sS -w "\nHTTP_STATUS:%{http_code}" \
+              -H "Accept: application/vnd.github+json" \
+              ${AUTH_HEADER:+-H "$AUTH_HEADER"} \
+              "$LATEST_URL")
+            LATEST_CODE=$(echo "$LATEST_RESP" | grep "HTTP_STATUS:" | cut -d':' -f2)
+            LATEST_BODY=$(echo "$LATEST_RESP" | sed '/HTTP_STATUS:/d')
+            if [ "$LATEST_CODE" -eq 200 ]; then
+              LATEST_STABLE_TAG=$(echo "$LATEST_BODY" | jq -r 'if .draft == false and .prerelease == false then .tag_name else empty end')
+            fi
+          fi
+
+          if [ -z "$LATEST_STABLE_TAG" ]; then
+            echo "::error::Failed to identify latest stable Wazuh release from GitHub Releases API."
+            exit 1
+          fi
+          echo "Identified latest stable release tag: $LATEST_STABLE_TAG"
+
+          echo "=================================================="
+          echo "Step 3: Determining major.minor version"
+          echo "=================================================="
+          CLEAN_TAG="${LATEST_STABLE_TAG#v}"
+          if [[ "$CLEAN_TAG" =~ ^([0-9]+)\.([0-9]+) ]]; then
+            TARGET_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+          else
+            echo "::error::Could not extract major.minor version from tag '$LATEST_STABLE_TAG'."
+            exit 1
+          fi
+
+          if [[ ! "$TARGET_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Extracted version '$TARGET_VERSION' does not match expected 'major.minor' format."
+            exit 1
+          fi
+          echo "Extracted major.minor target version: $TARGET_VERSION"
+
+          echo "=================================================="
+          echo "Step 4: Validating official installation script URL"
+          echo "=================================================="
+          INSTALL_SCRIPT_URL="https://packages.wazuh.com/${TARGET_VERSION}/wazuh-install.sh"
+          echo "Checking URL availability: $INSTALL_SCRIPT_URL"
+
+          SCRIPT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L "$INSTALL_SCRIPT_URL")
+          if [ "$SCRIPT_STATUS" -ne 200 ]; then
+            echo "::error::Official installation script is not available at $INSTALL_SCRIPT_URL (HTTP status: $SCRIPT_STATUS)."
+            exit 1
+          fi
+          echo "Official installation script verified: HTTP 200 OK."
+
+          echo "=================================================="
+          echo "Step 5: Comparing versions and updating $README_FILE"
+          echo "=================================================="
+          if [ "$CURRENT_VERSION" = "$TARGET_VERSION" ]; then
+            echo "README.md is already up to date with Wazuh version $TARGET_VERSION. No changes needed."
+            exit 0
+          fi
+
+          echo "Version update needed: $CURRENT_VERSION -> $TARGET_VERSION"
+          sed -i -E "s|https://packages\.wazuh\.com/${CURRENT_VERSION}/wazuh-install\.sh|https://packages.wazuh.com/${TARGET_VERSION}/wazuh-install.sh|g" "$README_FILE"
+
+          if git diff --quiet "$README_FILE"; then
+            echo "No file differences detected in $README_FILE after replacement."
+            exit 0
+          fi
+
+          echo "Diff to be committed:"
+          git diff "$README_FILE"
+
+          echo "=================================================="
+          echo "Step 6: Committing and pushing changes"
+          echo "=================================================="
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add "$README_FILE"
+          git commit -m "chore(wazuh): update installation version to ${TARGET_VERSION}"
+
+          TARGET_BRANCH="${GITHUB_REF_NAME:-main}"
+          echo "Pushing changes to branch: $TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+          echo "Successfully pushed Wazuh version update ($TARGET_VERSION) to $TARGET_BRANCH."

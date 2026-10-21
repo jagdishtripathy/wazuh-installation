@@ -1,105 +1,160 @@
-Here's a sample README file that explains the Wazuh installation process based on the steps you've provided:
+# Wazuh All-in-One Installation & Maintenance Guide
+
+[![Wazuh Version](https://img.shields.io/badge/Wazuh-v4.14-007EC6?logo=wazuh&logoColor=white)](https://documentation.wazuh.com/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04%20%7C%2022.04%20%7C%2024.04-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+[![Update Wazuh Version](https://github.com/jagdishtripathy/wazuh-installation/actions/workflows/update-wazuh-version.yml/badge.svg)](https://github.com/jagdishtripathy/wazuh-installation/actions/workflows/update-wazuh-version.yml)
+
+A streamlined, production-ready guide to installing, configuring, and maintaining a **Wazuh** SIEM & XDR (Security Information and Event Management & Extended Detection and Response) deployment on Linux.
 
 ---
 
-# Wazuh Installation Guide on Linux environment.
+## 📌 Table of Contents
 
-This README provides a brief overview of the installation process for Wazuh on an Linux environment. Follow the steps below to successfully install and configure Wazuh.
+- [Overview](#-overview)
+- [Prerequisites & System Requirements](#-prerequisites--system-requirements)
+- [Step-by-Step Installation](#-step-by-step-installation)
+- [Accessing the Wazuh Dashboard](#-accessing-the-wazuh-dashboard)
+- [Managing Wazuh Services](#-managing-wazuh-services)
+- [Adding & Monitoring Agents](#-adding--monitoring-agents)
+- [Upgrading an Existing Deployment](#-upgrading-an-existing-deployment)
+- [Support](#-support)
 
-## Prerequisites
+---
 
-- An Ubuntu server (preferably Ubuntu 20.04 or later)
+## 🔍 Overview
 
-- Root privileges on the server
+[Wazuh](https://wazuh.com/) is a free, open-source platform providing unified XDR and SIEM capabilities across endpoints, network devices, and cloud workloads. This repository provides:
+- Quick, single-step deployment instructions for an all-in-one Wazuh installation.
+- Safe, battle-tested procedures for upgrading existing server installations.
+- Automated version synchronization keeping installation commands aligned with the latest official releases.
 
-- Basic knowledge of terminal commands
+---
 
-## Installation Steps
+## 💻 Prerequisites & System Requirements
 
-1\. **Update the Package Index**
+Before starting, ensure your host environment meets the recommended minimum requirements:
 
-   Before starting the installation, ensure your package index is up-to-date. Run the following command in the terminal:
+- **Operating System**: Ubuntu 20.04 LTS, 22.04 LTS, or 24.04 LTS (64-bit)
+- **Privileges**: Root or `sudo` administrative privileges
+- **Minimum Hardware Specs**:
+  - **CPU**: 4 vCPUs / cores
+  - **RAM**: 8 GB RAM (16 GB recommended for production or multi-agent environments)
+  - **Disk**: 50 GB free disk space (SSD storage strongly recommended)
+- **Required Network Ports**:
+  - `443/TCP`: Wazuh Dashboard web interface (HTTPS)
+  - `1514/TCP`: Agent communication channel
+  - `1515/TCP`: Agent auto-enrollment service
+  - `55000/TCP`: Wazuh Server RESTful API
+  - `9200/TCP`: Wazuh Indexer RESTful API
 
-  ```
-sudo apt update
-  ```
+---
 
-2\. **Upgrade the System**
+## 🚀 Step-by-Step Installation
 
-   Upgrade all installed packages to their latest versions:
+### Step 1: Update System Repositories
+Ensure server package indexes and packages are up-to-date:
 
-  ```
-sudo apt upgrade
+```bash
+sudo apt update && sudo apt upgrade -y
 ```
-3\. **Gain Root Privileges**
 
-   To perform the installation, switch to the root user by running:
+### Step 2: Elevate to Root Privileges
+The Wazuh installation assistant requires root privileges to configure system services, users, and security certificates:
 
-  ```
+```bash
 sudo su
 ```
 
-4\. **Install Wazuh**
+### Step 3: Download and Execute the Wazuh Installer
+Run the official Wazuh installation assistant to perform an automated all-in-one installation:
 
-   Execute the following command to perform a single-step installation of Wazuh:
-
-```
+```bash
 curl -sO https://packages.wazuh.com/4.14/wazuh-install.sh && sudo bash ./wazuh-install.sh -a -i
 ```
 
-   After the installation completes, take note of the provided **ID and password**, as you will need these to access the Wazuh dashboard.
-
-5\. **Start Wazuh Services**\
-If the services don't start automatically, start them manually using the following commands:
-```
-sudo systemctl start wazuh-manager
-sudo systemctl start wazuh-dashboard
-```
-You can also check the status with:
-
-```
-sudo systemctl status wazuh-manager
-```
-6\. **Configure Wazuh IP Address(Optional)**
-
-   Change the Wazuh server's IP address by editing the configuration file. Replace `<your_ubuntu_ip>` with the actual IP address of your Ubuntu server:
-
-  ```
-sudo mousepad /etc/wazuh-dashboard/opensearch_dashboards.yml
-   ```
-   Update the necessary fields with your server's IP address.
-
-7\. **Access the Wazuh Dashboard**
-
-   Open a web browser and navigate to the Wazuh server's dashboard by entering:
-
-   ```
-https://<your_ubuntu_ip>
-   ```
-   Open a web browser and navigate to the Wazuh server's dashboard by entering:
-   
-8\. **Add Wazuh Agents**
-
-   You can add Wazuh agents for different operating systems, such as Kali Linux or Windows. Follow the respective instructions for installing the Wazuh agent on these systems.
-
-9\. **Monitor Added Wazuh Agents**
-
-   Once the agents are installed, you can monitor them through the Wazuh dashboard to ensure they are reporting correctly.
-
-## Conclusion
-
-You have successfully installed Wazuh on your Ubuntu server. For further configuration and detailed usage instructions, refer to the [Wazuh documentation](https://documentation.wazuh.com/current/index.html).
+> [!IMPORTANT]
+> **Save Your Credentials**: Upon successful installation, the script will output your initial login credentials:
+> - **User**: `admin`
+> - **Password**: `<automatically-generated-password>`
+>
+> Store these securely in a password manager. You will need them to log in to the web dashboard.
 
 ---
 
-👨‍💻 Author
-------------
+## 🌐 Accessing the Wazuh Dashboard
 
-[**Jagadish Tripathy**](https://www.linkedin.com/in/jagadishtripathy/)
+Once the installation finishes, open your web browser and navigate to:
 
-* * * * *
+```text
+https://<YOUR_SERVER_IP>
+```
 
-⭐ Support
----------
+> [!NOTE]
+> During initial access, your browser may display a self-signed certificate warning. This is expected because Wazuh generates self-signed TLS certificates by default during installation. Proceed past the prompt to reach the login screen.
 
-If this documentation helped you, consider giving it a ⭐ on GitHub!
+Log in using the `admin` username and password generated by the installer.
+
+---
+
+## ⚙️ Managing Wazuh Services
+
+Verify that all central Wazuh services are running properly:
+
+```bash
+# Check status of central components
+sudo systemctl status wazuh-manager
+sudo systemctl status wazuh-indexer
+sudo systemctl status wazuh-dashboard
+```
+
+If any service is stopped, start and enable it:
+
+```bash
+sudo systemctl enable --now wazuh-indexer
+sudo systemctl enable --now wazuh-manager
+sudo systemctl enable --now wazuh-dashboard
+```
+
+### (Optional) Configure Dashboard IP or Hostname
+If you need to adjust network bindings or server hostnames for the dashboard:
+
+```bash
+# Edit Wazuh Dashboard configuration
+sudo nano /etc/wazuh-dashboard/opensearch_dashboards.yml
+
+# After modifications, restart the dashboard service:
+sudo systemctl restart wazuh-dashboard
+```
+
+---
+
+## 🛡️ Adding & Monitoring Agents
+
+1. **Deploy Agents**: In the Wazuh Dashboard, open the top navigation menu and select **Add agent** (or navigate to **Endpoints Summary** &rarr; **Deploy new agent**).
+2. **Select Operating System**: Choose your target OS (Linux, Windows, macOS, etc.) and enter your Wazuh server IP address.
+3. **Execute Deployment Command**: Copy and run the generated command on your target endpoint.
+4. **Monitor Telemetry**: Agents will automatically register and begin streaming security logs, file integrity events, and vulnerability detections to the dashboard.
+
+---
+
+## 🔄 Upgrading an Existing Deployment
+
+> [!TIP]
+> Are you running an existing Wazuh deployment and looking to upgrade safely without losing configurations or historical alerts?
+
+Do not re-run the initial installation script over an existing deployment. Instead, consult our comprehensive upgrade guide:
+
+👉 **[Read the Server Upgrade Guide (SERVER_UPGRADE_GUIDE.md)](SERVER_UPGRADE_GUIDE.md)**
+
+The upgrade guide covers:
+- Identifying currently installed versions across all components (`Manager`, `Indexer`, `Dashboard`, `Agents`).
+- Checking official supported upgrade paths and breaking changes in release notes.
+- Crucial backup precautions (VM snapshots, Indexer snapshots, configuration files).
+- The strict component upgrade sequence (`Indexer` &rarr; `Manager` &rarr; `Dashboard` &rarr; `Agents`).
+- Step-by-step upgrade commands for Debian/Ubuntu and RHEL/CentOS.
+- Post-upgrade verification checklists and troubleshooting.
+
+---
+## ⭐ Support
+
+If this guide helped you deploy Wazuh, please consider giving this repository a ⭐ on GitHub!
